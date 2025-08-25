@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "81240939214",
+    "project_id": "hestia-c0294",
+    "storage_bucket": "hestia-c0294.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:81240939214:android:3506e8d1caea27d4034e9f",
+        "android_client_info": {
+          "package_name": "com.hestia360.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAGLbOlNyaoEUtW3rBrU4bMONKvMbFuibU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
