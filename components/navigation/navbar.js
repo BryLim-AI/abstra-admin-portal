@@ -738,7 +738,6 @@ const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [hasLease, setHasLease] = useState(null);
   const router = useRouter();
-
   const dropdownRef = useRef(null);
   const mobileMenuRef = useRef(null);
 
@@ -748,23 +747,6 @@ const Navbar = () => {
     }
   }, [user, admin]);
 
-  // Check tenant if have existing lease
-  useEffect(() => {
-    if (user?.userType === "tenant" && user?.tenant_id) {
-      const fetchLeaseStatus = async () => {
-        try {
-          const res = await axios.get(
-            `/api/leaseAgreement/checkCurrentLease?tenant_id=${user?.tenant_id}`
-          );
-          setHasLease(res?.data?.hasLease);
-        } catch (error) {
-          console.error("Error fetching lease status:", error);
-          setHasLease(false);
-        }
-      };
-      fetchLeaseStatus();
-    }
-  }, [user?.tenant_id]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -821,9 +803,6 @@ const Navbar = () => {
     if (admin) {
       await signOutAdmin();
       router.push("/pages/admin_login");
-    } else {
-      await signOut();
-      router.push("/pages/auth/login");
     }
     setDropdownOpen(false);
   };
@@ -832,32 +811,6 @@ const Navbar = () => {
     if (admin) {
       return [{ href: "/pages/system_admin/dashboard", label: "Dashboard" }];
     }
-
-    if (!user) {
-      return [
-        { href: "/pages/about-us", label: "About Us" },
-        { href: "/pages/find-rent", label: "Find Rent" },
-        { href: "/pages/partner", label: "Partner" },
-        { href: "/pages/contact-us", label: "Contact Us" },
-      ];
-    }
-
-    if (user?.userType === "tenant") {
-      return [
-        { href: "/pages/tenant/my-unit", label: "My Unit" },
-        { href: "/pages/find-rent", label: "Find Rent" },
-        { href: "/pages/tenant/visit-history", label: "My Bookings" },
-        { href: "/pages/tenant/chat", label: "Chat" },
-      ];
-    }
-
-    if (user?.userType === "landlord") {
-      return [
-        { href: "/pages/landlord/inbox", label: "Inbox" },
-        { href: "/pages/landlord/dashboard", label: "Dashboard" },
-      ];
-    }
-
     return [];
   };
 
@@ -870,13 +823,7 @@ const Navbar = () => {
           <div className="flex justify-between items-center h-14 sm:h-16">
             {/* Logo - Responsive sizing */}
             <Link
-              href={
-                user?.userType === "tenant"
-                  ? "/"
-                  : user?.userType === "landlord"
-                  ? "/pages/landlord/dashboard"
-                  : "/"
-              }
+              href=''
               className="text-lg sm:text-xl lg:text-2xl font-bold flex items-center space-x-1 sm:space-x-2 transition-transform duration-300 hover:scale-105 flex-shrink-0"
             >
               <Image
@@ -911,13 +858,13 @@ const Navbar = () => {
               // Unauthenticated Desktop Actions
               <div className="hidden md:flex space-x-2 lg:space-x-4">
                 <Link
-                  href="/pages/auth/login"
+                  href="/pages/admin_login"
                   className="px-3 lg:px-4 py-2 bg-white text-blue-600 rounded-md font-medium transition-all duration-300 hover:bg-gray-100 hover:shadow-md text-sm lg:text-base"
                 >
                   Login
                 </Link>
                 <Link
-                  href="/pages/auth/selectRole"
+                  href="/pages/auth/"
                   className="px-3 lg:px-4 py-2 bg-blue-800 rounded-md font-medium transition-all duration-300 hover:bg-blue-900 hover:shadow-md text-sm lg:text-base"
                 >
                   Register
@@ -937,7 +884,6 @@ const Navbar = () => {
                   >
                     <Image
                       src={
-                        user?.profilePicture ||
                         admin?.profile_picture ||
                         "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTwgEJf3figiiLmSgtwKnEgEkRw1qUf2ke1Bg&s"
                       }
@@ -948,8 +894,7 @@ const Navbar = () => {
                     />
                     <div className="hidden xl:block">
                       <div className="text-sm font-medium leading-none">
-                        {user?.firstName ||
-                          admin?.first_name + admin?.last_name}
+                        {admin?.first_name + admin?.last_name}
                       </div>
                       <div className="text-xs text-blue-100">
                         {user?.userType || "Admin"}
@@ -977,34 +922,16 @@ const Navbar = () => {
                     <div className="absolute right-0 top-12 w-56 bg-white text-black rounded-lg shadow-xl py-2 z-10 transition-all duration-300 transform origin-top-right">
                       <div className="px-4 py-2 border-b border-gray-100">
                         <p className="text-sm font-semibold text-gray-900">
-                          {user?.firstName ||
+                          {
                             admin?.first_name + " " + admin?.last_name ||
                             "Guest"}
                         </p>
                         <p className="text-xs text-gray-500 truncate">
-                          {user?.email || admin?.email || ""}
-                        </p>
-                        <p className="text-xs text-gray-500 truncate">
-                          {user?.user_id}
+                          { admin?.email || ""}
                         </p>
                       </div>
 
-                      {/* Points Section */}
-                      {user && (
-                        <div className="px-4 py-2 border-b border-gray-100 bg-gradient-to-r from-yellow-50 to-yellow-100">
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium text-gray-700">
-                              Reward Points
-                            </span>
-                            <div className="flex items-center space-x-1">
-                              <span className="text-lg font-bold text-yellow-600">
-                                {user?.points}
-                              </span>
-                              <span className="text-yellow-500">⭐</span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
+
 
                       {user?.userType === "tenant" && !hasLease ? (
                         <div
@@ -1053,52 +980,6 @@ const Navbar = () => {
                             ></path>
                           </svg>
                           Dashboard
-                        </Link>
-                      )}
-
-                      {user && (
-                        <Link
-                          href={`/pages/${user.userType}/profile`}
-                          className="flex items-center px-4 py-2 hover:bg-gray-100 transition-colors duration-200"
-                        >
-                          <svg
-                            className="w-4 h-4 mr-2"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                            ></path>
-                          </svg>
-                          View Profile
-                        </Link>
-                      )}
-
-                      {user?.userType === "tenant" && (
-                        <Link
-                          href={`/pages/tenant/digital-passport`}
-                          className="flex items-center px-4 py-2 hover:bg-gray-100 transition-colors duration-200"
-                        >
-                          <svg
-                            className="w-4 h-4 mr-2"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M12 12c2.28 0 4.09-1.8 4.09-4.09 0-2.28-1.8-4.09-4.09-4.09s-4.09 1.8-4.09 4.09C7.91 10.2 9.72 12 12 12zm0 2c-3.31 0-6 2.69-6 6h12c0-3.31-2.69-6-6-6z"
-                            />
-                          </svg>
-                          My Digital Passport
                         </Link>
                       )}
 
@@ -1291,32 +1172,9 @@ const Navbar = () => {
                 ) : (
                   /* User Actions for Authenticated Users */
                   <div className="pt-4 border-t border-blue-500 mt-4 space-y-1">
-                    {user?.userType === "tenant" && !hasLease ? (
-                      <div className="flex items-center py-3 px-3 text-gray-300 cursor-not-allowed">
-                        <svg
-                          className="w-5 h-5 mr-3"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                          ></path>
-                        </svg>
-                        Dashboard (Restricted)
-                      </div>
-                    ) : (
+
                       <Link
-                        href={
-                          user?.userType === "tenant"
-                            ? "/pages/tenant/my-unit"
-                            : `/pages/${
-                                user?.userType || "system_admin"
-                              }/dashboard`
-                        }
+                        href=''
                         className="flex items-center py-3 px-3 rounded-md hover:bg-blue-700 transition-colors duration-200"
                         onClick={() => setMenuOpen(false)}
                       >
@@ -1336,31 +1194,6 @@ const Navbar = () => {
                         </svg>
                         Dashboard
                       </Link>
-                    )}
-
-                    {user && (
-                      <Link
-                        href={`/pages/${user.userType}/profile/${user.user_id}`}
-                        className="flex items-center py-3 px-3 rounded-md hover:bg-blue-700 transition-colors duration-200"
-                        onClick={() => setMenuOpen(false)}
-                      >
-                        <svg
-                          className="w-5 h-5 mr-3"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                          ></path>
-                        </svg>
-                        Profile and Settings
-                      </Link>
-                    )}
 
                     {admin && (
                       <Link

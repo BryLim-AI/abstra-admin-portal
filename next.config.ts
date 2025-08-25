@@ -8,7 +8,15 @@ const baseConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-
+    async redirects() {
+        return [
+            {
+                source: '/',
+                destination: '/pages/admin_login',
+                permanent: true,
+            },
+        ];
+    },
   typescript: {
     ignoreBuildErrors: true,
   //   disable type cheking on build.
